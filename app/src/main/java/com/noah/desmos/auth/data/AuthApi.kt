@@ -1,5 +1,6 @@
 package com.noah.desmos.auth.data
 
+import com.noah.desmos.network.ApiResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET

@@ -1,6 +1,7 @@
 package com.noah.desmos.auth.data
 
 import com.noah.desmos.local.datastore.TokenManager
+import com.noah.desmos.network.safeApiCall
 import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.builtin.OTP
@@ -43,8 +44,8 @@ class AuthRepository(
         otp: String,
         fcmToken: String? = null
     ): Result<SignInResult> {
-        return withContext(Dispatchers.IO) {
-            try {
+        return try {
+            withContext(Dispatchers.IO) {
                 SupabaseClient.client.auth.verifyPhoneOtp(
                     type = OtpType.Phone.SMS,
                     phone = phone,
@@ -55,33 +56,18 @@ class AuthRepository(
                 val accessToken = session?.accessToken ?: throw Exception("No token")
 
                 tokenManager.saveToken(accessToken)
-
-                // Call backend signin
-                val response = api.signIn(
-                    SignInRequest(fcm_token = fcmToken)
-                )
-
-                if (!response.isSuccessful) {
-                    return@withContext Result.failure(Exception("Signin failed"))
-                }
-
-                val body = response.body()
-                if (body?.success == true && body.data != null) {
-                    if (body.data.isNewUser) {
-                        // New user — app should navigate to CompleteProfileScreen
-                        Result.success(SignInResult.NewUser)
-                    } else if (body.data.user != null) {
-                        // Existing user — go straight to Home
-                        Result.success(SignInResult.Success(body.data.user))
-                    } else {
-                        Result.failure(Exception("Unexpected response"))
-                    }
-                } else {
-                    Result.failure(Exception(body?.message ?: "Unknown error"))
-                }
-            } catch (e: Exception) {
-                Result.failure(e)
             }
+
+            safeApiCall { api.signIn(SignInRequest(fcm_token = fcmToken)) }
+                .mapCatching { signInData ->
+                    when {
+                        signInData.isNewUser -> SignInResult.NewUser
+                        signInData.user != null -> SignInResult.Success(signInData.user)
+                        else -> throw Exception("Unexpected signin response shape")
+                    }
+                }
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 
@@ -90,56 +76,12 @@ class AuthRepository(
      * Calls POST /auth/register with { name, fcm_token? }.
      */
     suspend fun register(request: RegisterRequest): Result<SignInResult> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val response = api.register(request)
-                if (!response.isSuccessful) {
-                    return@withContext Result.failure(Exception("Registration failed"))
-                }
-                val body = response.body()
-                if (body?.success == true && body.data != null) {
-                    Result.success(SignInResult.Success(body.data))
-                } else {
-                    Result.failure(Exception(body?.message ?: "Unexpected error"))
-                }
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
-        }
+        return safeApiCall { api.register(request) }
+            .map { userResponse -> SignInResult.Success(userResponse) }
     }
 
     suspend fun getProfile(): Result<UserResponse> {
-
-        return withContext(Dispatchers.IO) {
-
-            try {
-
-                val response = api.me()
-
-                if (response.isSuccessful &&
-                    response.body()?.data != null
-                ) {
-
-                    Result.success(
-                        response.body()!!.data!!
-                    )
-
-                } else {
-
-                    Result.failure(
-                        Exception("Unable to fetch profile")
-                    )
-
-                }
-
-            } catch (e: Exception) {
-
-                Result.failure(e)
-
-            }
-
-        }
-
+        return safeApiCall { api.me() }
     }
 
 }

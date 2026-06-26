@@ -1,20 +1,12 @@
 package com.noah.desmos.auth.data
 
+import com.noah.desmos.network.ApiResponse
+
 data class UserResponse(
     val id: String,
     val name: String,
     val phone: String,
     val createdAt: String
-)
-
-/**
- * Generic API response wrapper used by the backend.
- * All endpoints return { success, data?, message? }.
- */
-data class ApiResponse<T>(
-    val success: Boolean,
-    val data: T?,
-    val message: String?
 )
 
 /**
