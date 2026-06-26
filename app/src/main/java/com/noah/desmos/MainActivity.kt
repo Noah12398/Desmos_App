@@ -4,44 +4,51 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.noah.desmos.ui.theme.DesmosTheme
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
+import com.noah.desmos.auth.data.AuthRepository
+import com.noah.desmos.auth.ui.AuthViewModel
+import com.noah.desmos.auth.ui.AuthViewModelFactory
+import com.noah.desmos.local.datastore.TokenManager
+import com.noah.desmos.navigation.AppNavGraph
+import com.noah.desmos.network.ApiClient
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
+
         setContent {
-            DesmosTheme {
-                Scaffold( modifier = Modifier.fillMaxSize() ) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+
+            val navController =
+                rememberNavController()
+
+            val api =
+                ApiClient.authApi(this)
+
+            val repository =
+                AuthRepository(
+                    api,
+                    TokenManager(this)
+                )
+
+            val authViewModel: AuthViewModel =
+                viewModel(
+                    factory =
+                        AuthViewModelFactory(
+                            repository
+                        )
+                )
+
+            AppNavGraph(
+                navController,
+                authViewModel
+            )
+
         }
-    }
-}
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    DesmosTheme {
-        Greeting("Android")
     }
+
 }

@@ -24,22 +24,15 @@ import androidx.navigation.NavController
 import com.noah.desmos.navigation.Screen
 
 @Composable
-fun OtpScreen(
+fun CompleteProfileScreen(
     navController: NavController,
     viewModel: AuthViewModel
 ) {
-
-    LaunchedEffect(viewModel.loggedInUser, viewModel.isNewUser) {
-        when {
-            viewModel.loggedInUser != null -> {
-                navController.navigate(Screen.Home.route) {
-                    popUpTo(Screen.Login.route) { inclusive = true }
-                }
-            }
-            viewModel.isNewUser -> {
-                navController.navigate(Screen.CompleteProfile.route) {
-                    popUpTo(Screen.Login.route) { inclusive = false }
-                }
+    // Navigate to home when profile is completed (loggedInUser is set)
+    LaunchedEffect(viewModel.loggedInUser) {
+        if (viewModel.loggedInUser != null) {
+            navController.navigate(Screen.Home.route) {
+                popUpTo(Screen.Login.route) { inclusive = true }
             }
         }
     }
@@ -48,116 +41,41 @@ fun OtpScreen(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
-
         verticalArrangement = Arrangement.Center,
-
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         Text(
-            text = "Verify OTP",
+            text = "Complete Profile",
             style = MaterialTheme.typography.headlineMedium
         )
-
         Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = "OTP sent to"
-        )
-
-        Text(
-            text = viewModel.phone,
-            style = MaterialTheme.typography.bodyLarge
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
         OutlinedTextField(
-
-            value = viewModel.otp,
-
-            onValueChange = {
-                viewModel.onOtpChanged(it)
-            },
-
+            value = viewModel.name,
+            onValueChange = { viewModel.onNameChanged(it) },
+            label = { Text("Enter Name") },
             modifier = Modifier.fillMaxWidth(),
-
-            label = {
-                Text("Enter OTP")
-            },
-
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Number
-            ),
-
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
             singleLine = true
-
         )
-
         Spacer(modifier = Modifier.height(20.dp))
-
         Button(
-
-            onClick = {
-                viewModel.verifyOtp()
-            },
-
+            onClick = { viewModel.register() },
             modifier = Modifier.fillMaxWidth(),
-
             enabled = !viewModel.loading
-
         ) {
-
-            Text("Verify")
-
+            Text("Submit")
         }
-
         if (viewModel.loading) {
-
             Spacer(modifier = Modifier.height(20.dp))
-
             CircularProgressIndicator()
-
         }
-
-        viewModel.errorMessage?.let {
-
+        viewModel.errorMessage?.let { msg ->
             Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = it,
-                color = MaterialTheme.colorScheme.error
-            )
-
+            Text(text = msg, color = MaterialTheme.colorScheme.error)
         }
-
         Spacer(modifier = Modifier.height(24.dp))
-
-        TextButton(
-            onClick = {
-
-                viewModel.sendOtp()
-
-            }
-        ) {
-
-            Text("Resend OTP")
-
+        TextButton(onClick = { navController.popBackStack() }) {
+            Text("Back to Login")
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        TextButton(
-            onClick = {
-
-                navController.popBackStack()
-
-            }
-        ) {
-
-            Text("Change Phone Number")
-
-        }
-
     }
 }
