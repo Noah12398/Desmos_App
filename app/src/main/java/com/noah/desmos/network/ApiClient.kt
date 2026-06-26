@@ -26,6 +26,7 @@ object ApiClient {
 
         val client =
             OkHttpClient.Builder()
+                .authenticator(TokenAuthenticator(tokenManager))
                 .addInterceptor(
                     AuthInterceptor(tokenManager)
                 )

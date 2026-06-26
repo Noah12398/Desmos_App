@@ -53,9 +53,10 @@ class AuthRepository(
                 )
 
                 val session = SupabaseClient.client.auth.currentSessionOrNull()
-                val accessToken = session?.accessToken ?: throw Exception("No token")
+                val accessToken = session?.accessToken ?: throw Exception("No access token")
+                val refreshToken = session?.refreshToken ?: throw Exception("No refresh token")
 
-                tokenManager.saveToken(accessToken)
+                tokenManager.saveTokens(accessToken, refreshToken)
             }
 
             safeApiCall { api.signIn(SignInRequest(fcm_token = fcmToken)) }

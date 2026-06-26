@@ -13,41 +13,42 @@ class TokenManager(
 ) {
 
     companion object {
-
-        private val TOKEN =
-            stringPreferencesKey("token")
-
+        private val ACCESS_TOKEN = stringPreferencesKey("access_token")
+        private val REFRESH_TOKEN = stringPreferencesKey("refresh_token")
     }
 
-    suspend fun saveToken(
-        token: String
-    ) {
-
-        context.dataStore.edit {
-
-            it[TOKEN] = token
-
+    suspend fun saveTokens(accessToken: String, refreshToken: String) {
+        context.dataStore.edit { preferences ->
+            preferences[ACCESS_TOKEN] = accessToken
+            preferences[REFRESH_TOKEN] = refreshToken
         }
-
     }
 
-    suspend fun getToken(): String? {
-
-        val pref =
-            context.dataStore.data.first()
-
-        return pref[TOKEN]
-
+    suspend fun getAccessToken(): String? {
+        val pref = context.dataStore.data.first()
+        return pref[ACCESS_TOKEN]
     }
 
-    suspend fun clearToken() {
+    suspend fun getRefreshToken(): String? {
+        val pref = context.dataStore.data.first()
+        return pref[REFRESH_TOKEN]
+    }
 
-        context.dataStore.edit {
-
-            it.remove(TOKEN)
-
+    suspend fun clearTokens() {
+        context.dataStore.edit { preferences ->
+            preferences.remove(ACCESS_TOKEN)
+            preferences.remove(REFRESH_TOKEN)
         }
-
     }
 
+    // Keep legacy signatures for compatibility
+    suspend fun saveToken(token: String) {
+        context.dataStore.edit { preferences ->
+            preferences[ACCESS_TOKEN] = token
+        }
+    }
+
+    suspend fun getToken(): String? = getAccessToken()
+
+    suspend fun clearToken() = clearTokens()
 }
