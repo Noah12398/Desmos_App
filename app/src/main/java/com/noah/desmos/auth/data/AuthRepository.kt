@@ -2,74 +2,45 @@ package com.noah.desmos.auth.data
 
 import com.noah.desmos.local.datastore.TokenManager
 import com.noah.desmos.network.safeApiCall
-import io.github.jan.supabase.auth.OtpType
 import io.github.jan.supabase.auth.auth
-import io.github.jan.supabase.auth.providers.builtin.OTP
+import io.github.jan.supabase.auth.providers.Google
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-
+import android.util.Log
 class AuthRepository(
     private val api: AuthApi,
     private val tokenManager: TokenManager
 ) {
 
-    suspend fun sendOtp(phone: String): Result<Unit> {
-
+    suspend fun signInWithGoogle(): Result<Unit> {
         return withContext(Dispatchers.IO) {
-
             try {
-
-                SupabaseClient.client.auth.signInWith(OTP) {
-                    this.phone = phone
-                }
-
+                SupabaseClient.client.auth.signInWith(
+                    provider = Google,
+                    redirectUrl = "desmos://login"
+                )
                 Result.success(Unit)
-
             } catch (e: Exception) {
-
                 Result.failure(e)
-
             }
-
         }
-
     }
 
-    /**
-     * Verify OTP with Supabase, then call POST /auth/signin.
-     * Backend returns { isNewUser: bool, user?: {...} }.
-     */
-    suspend fun verifyOtp(
-        phone: String,
-        otp: String,
-        fcmToken: String? = null
-    ): Result<SignInResult> {
-        return try {
-            withContext(Dispatchers.IO) {
-                SupabaseClient.client.auth.verifyPhoneOtp(
-                    type = OtpType.Phone.SMS,
-                    phone = phone,
-                    token = otp
-                )
-
-                val session = SupabaseClient.client.auth.currentSessionOrNull()
-                val accessToken = session?.accessToken ?: throw Exception("No access token")
-                val refreshToken = session?.refreshToken ?: throw Exception("No refresh token")
-
-                tokenManager.saveTokens(accessToken, refreshToken)
-            }
-
-            safeApiCall { api.signIn(SignInRequest(fcm_token = fcmToken)) }
-                .mapCatching { signInData ->
-                    when {
-                        signInData.isNewUser -> SignInResult.NewUser
-                        signInData.user != null -> SignInResult.Success(signInData.user)
-                        else -> throw Exception("Unexpected signin response shape")
-                    }
-                }
-        } catch (e: Exception) {
-            Result.failure(e)
+    suspend fun saveSessionTokens(accessToken: String, refreshToken: String) {
+        withContext(Dispatchers.IO) {
+            tokenManager.saveTokens(accessToken, refreshToken)
         }
+    }
+
+    suspend fun signIn(fcmToken: String? = null): Result<SignInResult> {
+        return safeApiCall { api.signIn(SignInRequest(fcm_token = fcmToken)) }
+            .mapCatching { signInData ->
+                when {
+                    signInData.isNewUser -> SignInResult.NewUser
+                    signInData.user != null -> SignInResult.Success(signInData.user)
+                    else -> throw Exception("Unexpected signin response shape")
+                }
+            }
     }
 
     /**

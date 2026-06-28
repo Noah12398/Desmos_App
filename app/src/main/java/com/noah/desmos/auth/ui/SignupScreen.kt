@@ -7,17 +7,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.noah.desmos.navigation.Screen
@@ -27,10 +24,19 @@ fun SignupScreen(
     navController: NavController,
     viewModel: AuthViewModel
 ) {
-    // Navigate to OTP screen once OTP is successfully sent
-    LaunchedEffect(viewModel.otpSent) {
-        if (viewModel.otpSent) {
-            navController.navigate(Screen.Otp.route)
+    // Navigate based on auth result
+    LaunchedEffect(viewModel.loggedInUser, viewModel.isNewUser) {
+        when {
+            viewModel.loggedInUser != null -> {
+                navController.navigate(Screen.Home.route) {
+                    popUpTo(Screen.Signup.route) { inclusive = true }
+                }
+            }
+            viewModel.isNewUser -> {
+                navController.navigate(Screen.CompleteProfile.route) {
+                    popUpTo(Screen.Signup.route) { inclusive = false }
+                }
+            }
         }
     }
 
@@ -49,7 +55,7 @@ fun SignupScreen(
         Spacer(modifier = Modifier.height(8.dp))
         
         Text(
-            text = "Enter your phone number to receive a verification code",
+            text = "Sign in to access your family dashboard",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(horizontal = 16.dp),
@@ -58,25 +64,12 @@ fun SignupScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        OutlinedTextField(
-            value = viewModel.phone,
-            onValueChange = { viewModel.onPhoneChanged(it) },
-            modifier = Modifier.fillMaxWidth(),
-            label = { Text("Phone Number") },
-            placeholder = { Text("+1234567890") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-            singleLine = true,
-            enabled = !viewModel.loading
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
         Button(
-            onClick = { viewModel.sendOtp() },
+            onClick = { viewModel.signInWithGoogle() },
             modifier = Modifier.fillMaxWidth(),
-            enabled = !viewModel.loading && viewModel.phone.isNotBlank()
+            enabled = !viewModel.loading
         ) {
-            Text("Send OTP")
+            Text("Sign in with Google")
         }
 
         if (viewModel.loading) {

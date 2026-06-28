@@ -5,7 +5,7 @@ import com.noah.desmos.network.ApiResponse
 data class UserResponse(
     val id: String,
     val name: String,
-    val phone: String,
+    val email: String,
     val createdAt: String
 )
 

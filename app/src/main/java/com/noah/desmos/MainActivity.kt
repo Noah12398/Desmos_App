@@ -13,10 +13,18 @@ import com.noah.desmos.local.datastore.TokenManager
 import com.noah.desmos.navigation.AppNavGraph
 import com.noah.desmos.network.ApiClient
 
+import android.content.Intent
+import com.noah.desmos.auth.data.SupabaseClient
+import io.github.jan.supabase.auth.handleDeeplinks
+import android.util.Log
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Handle deep link on startup
+        Log.d("AuthFlow", "onCreate – handling intent: ${intent?.data}")
+        SupabaseClient.client.handleDeeplinks(intent)
 
         enableEdgeToEdge()
 
@@ -48,7 +56,10 @@ class MainActivity : ComponentActivity() {
             )
 
         }
-
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        SupabaseClient.client.handleDeeplinks(intent)
+    }
 }

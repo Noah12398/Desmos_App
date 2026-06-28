@@ -6,7 +6,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.noah.desmos.auth.ui.AuthViewModel
-import com.noah.desmos.auth.ui.OtpScreen
 import com.noah.desmos.auth.ui.SignupScreen
 import com.noah.desmos.auth.ui.CompleteProfileScreen
 import com.noah.desmos.family.ui.HomeScreen
@@ -22,15 +21,6 @@ fun AppNavGraph(
         navController = navController,
         startDestination = Screen.Signup.route
     ) {
-
-        composable(Screen.Otp.route) {
-
-            OtpScreen(
-                navController = navController,
-                viewModel = authViewModel
-            )
-
-        }
 
         composable(Screen.Signup.route) {
 

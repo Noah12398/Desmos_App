@@ -8,18 +8,16 @@ import androidx.lifecycle.viewModelScope
 import com.noah.desmos.auth.data.AuthRepository
 import com.noah.desmos.auth.data.RegisterRequest
 import com.noah.desmos.auth.data.SignInResult
+import com.noah.desmos.auth.data.SupabaseClient
 import com.noah.desmos.auth.model.User
+import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.status.SessionStatus
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class AuthViewModel(
     private val repository: AuthRepository
 ) : ViewModel() {
-
-    var phone by mutableStateOf("")
-        private set
-
-    var otp by mutableStateOf("")
-        private set
 
     var loading by mutableStateOf(false)
         private set
@@ -27,106 +25,74 @@ class AuthViewModel(
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
-    var otpSent by mutableStateOf(false)
-        private set
-
     var loggedInUser by mutableStateOf<User?>(null)
         private set
 
     var isNewUser by mutableStateOf(false)
         private set
+
     var name by mutableStateOf("")
         private set
 
     var fcmToken by mutableStateOf<String?>(null)
         private set
 
+    init {
+        viewModelScope.launch {
+            SupabaseClient.client.auth.sessionStatus.collectLatest { status ->
+                if (status is SessionStatus.Authenticated) {
+                    val session = status.session
+                    repository.saveSessionTokens(session.accessToken, session.refreshToken)
+                    
+                    loading = true
+                    errorMessage = null
+                    
+                    val result = repository.signIn(fcmToken)
+                    
+                    loading = false
+                    
+                    result.onSuccess { signInResult ->
+                        when (signInResult) {
+                            is SignInResult.Success -> {
+                                loggedInUser = User(
+                                    id = signInResult.user.id,
+                                    name = signInResult.user.name,
+                                    email = signInResult.user.email,
+                                    createdAt = signInResult.user.createdAt
+                                )
+                                isNewUser = false
+                            }
+                            is SignInResult.NewUser -> {
+                                isNewUser = true
+                            }
+                        }
+                    }
+                    
+                    result.onFailure {
+                        errorMessage = it.message
+                    }
+                }
+            }
+        }
+    }
+
     fun onNameChanged(value: String) {
         name = value
     }
 
-    fun setFcmToken(token: String?) {
+    fun updateFcmToken(token: String?) {
         fcmToken = token
     }
 
-    fun onPhoneChanged(value: String) {
-        phone = value
-    }
-
-    fun onOtpChanged(value: String) {
-        otp = value
-    }
-
-    fun sendOtp() {
-
-        if (phone.isBlank()) {
-            errorMessage = "Enter phone number"
-            return
-        }
-
+    fun signInWithGoogle() {
         viewModelScope.launch {
-
             loading = true
             errorMessage = null
-
-            val result = repository.sendOtp(phone)
-
+            val result = repository.signInWithGoogle()
             loading = false
-
-            result.onSuccess {
-                otpSent = true
-            }
-
             result.onFailure {
                 errorMessage = it.message
             }
-
-        }
-    }
-
-    fun verifyOtp() {
-
-        if (otp.isBlank()) {
-            errorMessage = "Enter OTP"
-            return
-        }
-
-        viewModelScope.launch {
-
-            loading = true
-            errorMessage = null
-
-            val result = repository.verifyOtp(
-                phone = phone,
-                otp = otp,
-                fcmToken = fcmToken
-            )
-
-            loading = false
-
-            result.onSuccess { signInResult ->
-                when (signInResult) {
-                    is SignInResult.Success -> {
-                        loggedInUser = User(
-                            id = signInResult.user.id,
-                            name = signInResult.user.name,
-                            phone = signInResult.user.phone,
-                            createdAt = signInResult.user.createdAt
-                        )
-                        isNewUser = false
-                    }
-                    is SignInResult.NewUser -> {
-                        // User exists but needs to register profile (provide name)
-                        isNewUser = true
-                    }
-                }
-            }
-
-            result.onFailure {
-                errorMessage = it.message
-                isNewUser = false
-            }
-
         }
     }
 
@@ -150,7 +116,7 @@ class AuthViewModel(
                         loggedInUser = User(
                             id = signInResult.user.id,
                             name = signInResult.user.name,
-                            phone = signInResult.user.phone,
+                            email = signInResult.user.email,
                             createdAt = signInResult.user.createdAt
                         )
                         isNewUser = false
@@ -168,30 +134,21 @@ class AuthViewModel(
     }
 
     fun loadProfile() {
-
         viewModelScope.launch {
-
             loading = true
-
             val result = repository.getProfile()
-
             loading = false
-
             result.onSuccess {
-
                 loggedInUser = User(
                     id = it.id,
                     name = it.name,
-                    phone = it.phone,
+                    email = it.email,
                     createdAt = it.createdAt
                 )
-
             }
-
             result.onFailure {
                 errorMessage = it.message
             }
-
         }
     }
 
@@ -200,9 +157,11 @@ class AuthViewModel(
     }
 
     fun logout() {
-        loggedInUser = null
-        otpSent = false
-        phone = ""
-        otp = ""
+        viewModelScope.launch {
+            SupabaseClient.client.auth.signOut()
+            loggedInUser = null
+            isNewUser = false
+            name = ""
+        }
     }
 }

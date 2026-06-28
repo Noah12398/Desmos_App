@@ -64,9 +64,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.3")
     implementation("androidx.activity:activity-compose:1.11.0")
 
-    // Compose BOM
+    // Compose
     implementation(platform("androidx.compose:compose-bom:2026.01.00"))
-
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
@@ -82,40 +81,47 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:3.0.0")
     implementation("com.squareup.retrofit2:converter-gson:3.0.0")
 
-    // OkHttp
+    // OkHttp (Retrofit)
     implementation("com.squareup.okhttp3:okhttp:5.1.0")
     implementation("com.squareup.okhttp3:logging-interceptor:5.1.0")
 
     // Kotlin Serialization
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 
+    // --------------------------
+    // KTOR (Required by Supabase)
+    // --------------------------
+    implementation("io.ktor:ktor-client-core:3.2.3")
+    implementation("io.ktor:ktor-client-okhttp:3.2.3")
+    implementation("io.ktor:ktor-client-content-negotiation:3.2.3")
+    implementation("io.ktor:ktor-serialization-kotlinx-json:3.2.3")
+
+    // --------------------------
     // Supabase
+    // --------------------------
     implementation("io.github.jan-tennert.supabase:auth-kt:3.2.6")
     implementation("io.github.jan-tennert.supabase:postgrest-kt:3.2.6")
 
     // DataStore
     implementation("androidx.datastore:datastore-preferences:1.1.7")
 
-    // Firebase Cloud Messaging
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:34.2.0"))
     implementation("com.google.firebase:firebase-messaging")
-
-    // Unit Testing
-    testImplementation("junit:junit:4.13.2")
-
-    // Android Testing
-    androidTestImplementation("androidx.test.ext:junit:1.3.0")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
-
-    // Compose Testing
-    androidTestImplementation(platform("androidx.compose:compose-bom:2026.01.00"))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-
-    // Debug
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2")
+
+    // Tests
+    testImplementation("junit:junit:4.13.2")
+
+    androidTestImplementation("androidx.test.ext:junit:1.3.0")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
+
+    androidTestImplementation(platform("androidx.compose:compose-bom:2026.01.00"))
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

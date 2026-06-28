@@ -11,7 +11,10 @@ object SupabaseClient {
         supabaseKey = BuildConfig.SUPABASE_KEY
     ) {
 
-        install(Auth)
+        install(Auth) {
+            scheme = "desmos"
+            host = "login"
+        }
 
     }
 }
