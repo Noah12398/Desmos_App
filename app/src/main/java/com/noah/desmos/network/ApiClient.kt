@@ -11,7 +11,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object ApiClient {
 
     private const val BASE_URL =
-        "http://10.0.2.2:3000/api/"
+        "http://192.168.1.4:3000/api/"
 
     fun authApi(
         context: Context

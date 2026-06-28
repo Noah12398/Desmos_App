@@ -60,6 +60,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        Log.d("AuthFlow", "onNewIntent – handling intent: ${intent?.data}")
         SupabaseClient.client.handleDeeplinks(intent)
     }
 }

@@ -13,14 +13,17 @@ class AuthRepository(
 ) {
 
     suspend fun signInWithGoogle(): Result<Unit> {
+        Log.d("AuthFlow", "signInWithGoogle() – invoking Supabase sign‑in")
         return withContext(Dispatchers.IO) {
             try {
                 SupabaseClient.client.auth.signInWith(
                     provider = Google,
                     redirectUrl = "desmos://login"
                 )
+                Log.d("AuthFlow", "signInWithGoogle() – sign‑in call succeeded")
                 Result.success(Unit)
             } catch (e: Exception) {
+                Log.e("AuthFlow", "signInWithGoogle() – exception: ${e.message}", e)
                 Result.failure(e)
             }
         }
