@@ -8,3 +8,7 @@ data class RegisterRequest(
     val name: String,
     val fcm_token: String? = null
 )
+
+data class UpdateFcmTokenRequest(
+    val fcm_token: String
+)

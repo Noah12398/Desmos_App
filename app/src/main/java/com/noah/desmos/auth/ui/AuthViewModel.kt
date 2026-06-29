@@ -14,6 +14,10 @@ import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.status.SessionStatus
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import android.util.Log
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlin.coroutines.resume
 
 class AuthViewModel(
     private val repository: AuthRepository
@@ -46,6 +50,10 @@ class AuthViewModel(
                     
                     loading = true
                     errorMessage = null
+
+                    // Fetch FCM token before calling /signin so it's included in the request
+                    val token = fetchFcmToken()
+                    fcmToken = token
                     
                     val result = repository.signIn(fcmToken)
                     
@@ -73,6 +81,23 @@ class AuthViewModel(
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Suspends and returns the FCM registration token, or null on failure.
+     */
+    private suspend fun fetchFcmToken(): String? {
+        return suspendCancellableCoroutine { cont ->
+            FirebaseMessaging.getInstance().token
+                .addOnSuccessListener { token ->
+                    Log.d("AuthFlow", "FCM token obtained: ${token.take(10)}…")
+                    cont.resume(token)
+                }
+                .addOnFailureListener { e ->
+                    Log.e("AuthFlow", "Failed to get FCM token", e)
+                    cont.resume(null)
+                }
         }
     }
 
@@ -104,6 +129,12 @@ class AuthViewModel(
         viewModelScope.launch {
             loading = true
             errorMessage = null
+
+            // Ensure FCM token is fresh for registration too
+            if (fcmToken == null) {
+                fcmToken = fetchFcmToken()
+            }
+
             val request = RegisterRequest(
                 name = name,
                 fcm_token = fcmToken

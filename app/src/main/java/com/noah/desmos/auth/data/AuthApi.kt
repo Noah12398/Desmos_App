@@ -20,4 +20,9 @@ interface AuthApi {
 
     @GET("auth/me")
     suspend fun me(): Response<ApiResponse<UserResponse>>
+
+    @POST("users/fcm-token")
+    suspend fun updateFcmToken(
+        @Body request: UpdateFcmTokenRequest
+    ): Response<ApiResponse<UserResponse>>
 }

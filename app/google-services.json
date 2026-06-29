@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "658100998752",
+    "project_id": "desmos-53b4d",
+    "storage_bucket": "desmos-53b4d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:658100998752:android:0fe058def1db15db08a905",
+        "android_client_info": {
+          "package_name": "com.noah.desmos"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "658100998752-42si2m4r7qb9vvs2liqcso6b9du8fad7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCHZOxAeyFnmrNaGcyOIs8E_xmV4tp2B5A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "658100998752-42si2m4r7qb9vvs2liqcso6b9du8fad7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

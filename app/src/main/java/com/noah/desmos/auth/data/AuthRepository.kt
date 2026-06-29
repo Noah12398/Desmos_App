@@ -59,4 +59,8 @@ class AuthRepository(
         return safeApiCall { api.me() }
     }
 
+    suspend fun updateFcmToken(token: String): Result<UserResponse> {
+        return safeApiCall { api.updateFcmToken(UpdateFcmTokenRequest(fcm_token = token)) }
+    }
+
 }

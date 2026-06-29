@@ -17,6 +17,7 @@ import android.content.Intent
 import com.noah.desmos.auth.data.SupabaseClient
 import io.github.jan.supabase.auth.handleDeeplinks
 import android.util.Log
+
 class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {

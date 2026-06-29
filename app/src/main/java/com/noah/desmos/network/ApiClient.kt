@@ -11,7 +11,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object ApiClient {
 
     private const val BASE_URL =
-        "http://192.168.1.4:3000/api/"
+        "https://desmos-backend.onrender.com/api/"
 
     fun authApi(
         context: Context
